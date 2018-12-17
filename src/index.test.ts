@@ -11,6 +11,7 @@ import yarn, {
   checkForNewDependencies,
   checkForRelease,
   checkForTypesInDeps,
+  DependencyManager,
   getNPMMetadataForDep,
 } from "./index"
 
@@ -70,24 +71,45 @@ describe("checkForTypesInDeps", () => {
 })
 
 describe("checkForLockfileDiff", () => {
-  it("does nothing when there's no dependency changes", () => {
-    checkForLockfileDiff({})
+  it("does nothing when there's no yarn dependency changes", () => {
+    checkForLockfileDiff("yarn", {})
     expect(global.warn).toHaveBeenCalledTimes(0)
   })
 
-  it("when there are dependency changes, and no lockfile in modified - warn", () => {
+  it("does nothing when there's no npm dependency changes", () => {
+    checkForLockfileDiff("npm", {})
+    expect(global.warn).toHaveBeenCalledTimes(0)
+  })
+
+  it("when there are dependency changes with yarn, and no lockfile in modified - warn", () => {
     global.danger = { git: { modified_files: [] } }
     const deps = {
       dependencies: {},
     }
-    checkForLockfileDiff(deps)
+    checkForLockfileDiff("yarn", deps)
     expect(global.warn).toHaveBeenCalledTimes(1)
   })
 
-  it("when there are dependency changes, and a lockfile in modified - do not warn", () => {
+  it("when there are dependency changes with npm, and no lockfile in modified - warn", () => {
+    global.danger = { git: { modified_files: [] } }
+    const deps = {
+      dependencies: {},
+    }
+    checkForLockfileDiff("npm", deps)
+    expect(global.warn).toHaveBeenCalledTimes(1)
+  })
+
+  it("when there are dependency changes, and a yarn lockfile in modified - do not warn", () => {
     global.danger = { git: { modified_files: ["yarn.lock"] } }
     const deps = { dependencies: {} }
-    checkForLockfileDiff(deps)
+    checkForLockfileDiff("yarn", deps)
+    expect(global.warn).toHaveBeenCalledTimes(0)
+  })
+
+  it("when there are dependency changes, and an npm lockfile in modified - do not warn", () => {
+    global.danger = { git: { modified_files: ["package-lock.json"] } }
+    const deps = { dependencies: {} }
+    checkForLockfileDiff("npm", deps)
     expect(global.warn).toHaveBeenCalledTimes(0)
   })
 })

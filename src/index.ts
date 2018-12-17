@@ -9,6 +9,7 @@ export declare function markdown(message: string): void
 
 import * as child_process from "child_process"
 import { distanceInWords } from "date-fns"
+import * as fs from "fs"
 import * as fetch from "node-fetch"
 import * as semver from "semver"
 
@@ -25,7 +26,7 @@ export const checkForRelease = packageDiff => {
 }
 
 // Initial stab at showing information about a new dependency
-export const checkForNewDependencies = async (packageDiff, npmAuthToken?: string) => {
+export const checkForNewDependencies = async (type: DependencyManager, packageDiff, npmAuthToken?: string) => {
   const sentence = danger.utils.sentence
   const added = [] as string[]
   const newDependencies = findNewDependencies(packageDiff)
@@ -43,7 +44,7 @@ export const checkForNewDependencies = async (packageDiff, npmAuthToken?: string
       warn(`Could not get info from npm on ${safeLink(dep)}</a>`)
     }
 
-    if ("undefined" === typeof peril) {
+    if ("undefined" === typeof peril && "yarn" === type) {
       const yarn = await getYarnMetadataForDep(dep)
       if (yarn && yarn.length) {
         markdown(yarn)
@@ -190,12 +191,13 @@ ${readme}
 }
 // Ensure a lockfile change if deps/devDeps changes, in case
 // someone has only used `npm install` instead of `yarn.
-export const checkForLockfileDiff = packageDiff => {
+export const checkForLockfileDiff = (type: DependencyManager, packageDiff) => {
   if (packageDiff.dependencies || packageDiff.devDependencies) {
-    const lockfileChanged = includes(danger.git.modified_files, "yarn.lock")
+    const lockfile = type === "npm" ? "package-lock.json" : "yarn.lock"
+    const lockfileChanged = includes(danger.git.modified_files, lockfile)
     if (!lockfileChanged) {
-      const message = "Changes were made to package.json, but not to yarn.lock."
-      const idea = "Perhaps you need to run `yarn install`?"
+      const message = `Changes were made to package.json, but not to ${lockfile}.`
+      const idea = `Perhaps you need to run \`${type} install\`?`
       warn(`${message}<br/><i>${idea}</i>`)
     }
   }
@@ -215,21 +217,56 @@ export const checkForTypesInDeps = packageDiff => {
   }
 }
 
+export type DependencyManager = "detect" | "npm" | "yarn"
+
 export interface Options {
   pathToPackageJSON?: string
   npmAuthToken?: string
+  type?: DependencyManager
+}
+
+function detectDependencyManager(selected?: DependencyManager): DependencyManager | null {
+  const type = selected ? selected : "detect"
+
+  if ("detect" !== type) {
+    return type
+  }
+
+  // Can't check filesystem on Peril
+  if ("undefined" !== typeof peril) {
+    fail(`Unable to detect 'yarn' or 'npm' usage on Peril.
+Please pass in \`type\` option declaring which manager this project uses`)
+    return null
+  }
+
+  if (fs.existsSync("yarn.lock")) {
+    return "yarn"
+  }
+
+  if (fs.existsSync("package-lock.json")) {
+    return "npm"
+  }
+
+  // No lockfile, so we can't tell
+  fail(`Unable to detect 'yarn' or 'npm' usage, as neither \`package-lock.json\` nor \`yarn.lock\` exists.
+Please pass in \`type\` option declaring which manager this project uses`)
+  return null
 }
 
 /**
  * Provides dependency information on dependency changes in a PR
  */
-export default async function yarn(options: Options = {}) {
+export default async function dependencies(options: Options = {}) {
   const path = options.pathToPackageJSON ? options.pathToPackageJSON : "package.json"
-  const packageDiff = await danger.git.JSONDiffForFile(path)
+  const type = detectDependencyManager(options.type)
+  if (type === null) {
+    return
+  }
 
+  const packageDiff = await danger.git.JSONDiffForFile(path)
   checkForRelease(packageDiff)
-  checkForLockfileDiff(packageDiff)
+  checkForLockfileDiff(type, packageDiff)
   checkForTypesInDeps(packageDiff)
 
-  await checkForNewDependencies(packageDiff, options.npmAuthToken)
+  await checkForNewDependencies(type, packageDiff, options.npmAuthToken)
 }
