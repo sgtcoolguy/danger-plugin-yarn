@@ -17,7 +17,7 @@ import * as includesOriginal from "lodash.includes"
 const includes = includesOriginal as any
 
 // Celebrate when a new release is being shipped
-export const checkForRelease = packageDiff => {
+export const checkForRelease = (packageDiff) => {
   if (packageDiff.version && packageDiff.version.before && packageDiff.version.after) {
     if (semver.lt(packageDiff.version.before, packageDiff.version.after)) {
       message(":tada: - congrats on your new release")
@@ -55,7 +55,7 @@ export const checkForNewDependencies = async (type: DependencyManager, packageDi
   }
 }
 
-export const findNewDependencies = packageDiff => {
+export const findNewDependencies = (packageDiff) => {
   const added = [] as string[]
   for (const element of [packageDiff.dependencies, packageDiff.devDependencies]) {
     if (element && element.added && element.added.length) {
@@ -65,8 +65,8 @@ export const findNewDependencies = packageDiff => {
   return added
 }
 
-export const getYarnMetadataForDep = async dep => {
-  return new Promise<string>(resolve => {
+export const getYarnMetadataForDep = async (dep) => {
+  return new Promise<string>((resolve) => {
     child_process.exec(`yarn why '${dep}' --json`, (err, output) => {
       if (output) {
         // Comes as a series of little JSON messages
@@ -74,7 +74,7 @@ export const getYarnMetadataForDep = async dep => {
         const asJSON = usefulJSONContents.split("}\n{").join("},{")
 
         const whyJSON = JSON.parse(`[${asJSON}]`)
-        const messages = whyJSON.filter(msg => typeof msg.data === "string").map(m => m.data)
+        const messages = whyJSON.filter((msg) => typeof msg.data === "string").map((m) => m.data)
         resolve(`
   <details>
     <summary><code>yarn why ${printDep(dep)}</code> output</summary>
@@ -103,7 +103,7 @@ export const getNPMMetadataForDep = async (dep, npmAuthToken?: string) => {
   const npmResponse = await fetch(`https://registry.npmjs.org/${urlDep}`, { headers })
 
   if (npmResponse.ok) {
-    const tableDeets = [] as Array<{ name: string; message: string }>
+    const tableDeets = [] as { name: string; message: string }[]
     const npm = await npmResponse.json()
 
     if (npm.time && npm.time.created) {
@@ -183,7 +183,7 @@ ${npm.readme}
 
 <table>
   <thead><tr><th></th><th width="100%"></th></tr></thead>
-  ${tableDeets.map(deet => `<tr><td>${deet.name}</td><td>${deet.message}</td></tr>`).join("")}
+  ${tableDeets.map((deet) => `<tr><td>${deet.name}</td><td>${deet.message}</td></tr>`).join("")}
 </table>
 ${readme}
 `
@@ -196,23 +196,23 @@ export const checkForLockfileDiff = (type: DependencyManager, packageDiff) => {
     const lockfile = type === "npm" ? "package-lock.json" : "yarn.lock"
     const lockfileChanged = includes(danger.git.modified_files, lockfile)
     if (!lockfileChanged) {
-      const message = `Changes were made to package.json, but not to ${lockfile}.`
+      const lockFileMessage = `Changes were made to package.json, but not to ${lockfile}.`
       const idea = `Perhaps you need to run \`${type} install\`?`
-      warn(`${message}<br/><i>${idea}</i>`)
+      warn(`${lockFileMessage}<br/><i>${idea}</i>`)
     }
   }
 }
 
 // Don't ship @types dependencies to consumers of Danger
-export const checkForTypesInDeps = packageDiff => {
+export const checkForTypesInDeps = (packageDiff) => {
   const sentence = danger.utils.sentence
 
   if (packageDiff.dependencies && packageDiff.dependencies.added) {
-    const typesDeps = packageDiff.dependencies.added.filter(d => d.startsWith("@types")).map(printDep)
+    const typesDeps = packageDiff.dependencies.added.filter((d) => d.startsWith("@types")).map(printDep)
     if (typesDeps.length) {
-      const message = `@types dependencies were added to package.json, as a dependency for others.`
+      const typesMessage = `@types dependencies were added to package.json, as a dependency for others.`
       const idea = `You need to move ${sentence(typesDeps)} into "devDependencies"?`
-      fail(`${message}<br/><i>${idea}</i>`)
+      fail(`${typesMessage}<br/><i>${idea}</i>`)
     }
   }
 }
