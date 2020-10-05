@@ -41,7 +41,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
-    "date-fns": "^1.28.5",
+    "date-fns": "^2.16.1",
     "lodash.flatten": "^4.4.0",
     "lodash.includes": "^4.3.0",
     "node-fetch": "^2.6.1",

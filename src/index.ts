@@ -8,7 +8,7 @@ export declare function fail(message: string): void
 export declare function markdown(message: string): void
 
 import * as child_process from "child_process"
-import { distanceInWords } from "date-fns"
+import { formatDistance } from "date-fns"
 import * as fs from "fs"
 import * as fetch from "node-fetch"
 import * as semver from "semver"
@@ -107,12 +107,12 @@ export const getNPMMetadataForDep = async (dep, npmAuthToken?: string) => {
     const npm = await npmResponse.json()
 
     if (npm.time && npm.time.created) {
-      const distance = distanceInWords(new Date(npm.time.created), new Date())
+      const distance = formatDistance(new Date(npm.time.created), new Date())
       tableDeets.push({ name: "Created", message: `${distance} ago` })
     }
 
     if (npm.time && npm.time.modified) {
-      const distance = distanceInWords(new Date(npm.time.modified), new Date())
+      const distance = formatDistance(new Date(npm.time.modified), new Date())
       tableDeets.push({
         name: "Last Updated",
         message: `${distance} ago`,
