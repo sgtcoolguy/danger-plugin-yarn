@@ -58,7 +58,7 @@
     "esdoc": "^0.5.2",
     "husky": "^0.13.3",
     "jest": "^20.0.1",
-    "lint-staged": "^3.4.1",
+    "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "semantic-release": "^17.1.2",
     "ts-jest": "^20.0.0",
@@ -74,8 +74,7 @@
   "lint-staged": {
     "*.@(ts|tsx)": [
       "tslint --fix",
-      "npm run prettier-write --",
-      "git add"
+      "npm run prettier-write --"
     ]
   },
   "jest": {
