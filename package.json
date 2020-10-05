@@ -57,7 +57,7 @@
     "danger": "^10.5.0",
     "esdoc": "^0.5.2",
     "husky": "^4.3.0",
-    "jest": "^20.0.1",
+    "jest": "^26.5.0",
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "semantic-release": "^17.1.2",
