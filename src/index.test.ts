@@ -3,7 +3,7 @@ jest.mock("node-fetch", () => () =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve(JSON.parse(mockfs.readFileSync("src/fixtures/danger-npm-info.json", "utf8"))),
-  })
+  }),
 )
 
 import yarn, {
