@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@semantic-release/changelog": "^5.0.1",
+    "@semantic-release/git": "^9.0.0",
     "@types/jest": "^19.2.4",
     "@types/node": "^7.0.29",
     "commitizen": "^4.2.1",
