@@ -24,9 +24,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "precommit": "lint-staged",
     "commit": "git-cz",
-    "commitmsg": "validate-commit-msg",
     "build": "tsc",
     "test": "jest",
     "predocs": "rm -rf docs/",
@@ -56,7 +54,7 @@
     "cz-conventional-changelog": "^2.0.0",
     "danger": "*",
     "esdoc": "^0.5.2",
-    "husky": "^0.13.3",
+    "husky": "^4.3.0",
     "jest": "^20.0.1",
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
@@ -91,5 +89,11 @@
       "\\.snap$",
       "<rootDir>/node_modules/"
     ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "validate-commit-msg",
+      "pre-commit": "lint-staged"
+    }
   }
 }
