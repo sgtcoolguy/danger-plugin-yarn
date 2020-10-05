@@ -48,6 +48,7 @@
     "semver": "^7.3.2"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^5.0.1",
     "@types/jest": "^19.2.4",
     "@types/node": "^7.0.29",
     "commitizen": "^4.2.1",
